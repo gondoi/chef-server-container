@@ -1,0 +1,11 @@
+# Built gems
+*.gem
+
+# Bundler
+Gemfile.lock
+
+# Vagrant
+.vagrant
+
+# Rope
+.ropeproject
