@@ -14,8 +14,8 @@
 
 """Chef server routes."""
 
-import logging
 import datetime
+import logging
 
 import bottle
 import chef
@@ -74,22 +74,32 @@ class Router(object):
         self.client = 'admin'
 
         self.app = app
+        app.route('/validation_key', 'GET', self.chef_validator_key)
         app.route('<path:re:.*>',
                   ['GET', 'POST', 'PUT', 'DELETE'],
                   self.chef_request)
 
+    def chef_validator_key(self):
+        with open('/etc/chef-server/chef-validator.pem') as validator_key:
+            return validator_key.readlines()
+
     def chef_request(self, path=None):
         """Pass all chef API requests through to local chef in container."""
         request = bottle.request
+        print bottle.request.body.readlines()
         api = Chef(self.url, self.key, self.client)
 
         headers = {
             'accept': request.headers['accept'],
             'content-type': request.headers['content-type'],
         }
-        response = api.requests_object(request.method, path,
-                                       data=request.body.getvalue(),
-                                       headers=headers)
+        try:
+            response = api.requests_object(request.method, path,
+                                           data=request.body.getvalue(),
+                                           headers=headers)
+        except requests.HTTPError as error:
+            bottle.response.status = error.response.status_code
+            return error.response.content
 
         bottle.response.status = response.status_code
         for header in response.headers:

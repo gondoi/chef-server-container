@@ -23,10 +23,6 @@ RUN ln -sf /bin/true /sbin/initctl
 
 COPY chef-server.rb /etc/chef-server/
 
-RUN /opt/chef-server/embedded/bin/runsvdir-start & \
-    chef-server-ctl reconfigure && \
-    chef-server-ctl stop
-
 # Add chefdk gem installs and embedded binaries to the PATH
 ENV PATH $PATH:/opt/chef-server/embedded/bin
 
